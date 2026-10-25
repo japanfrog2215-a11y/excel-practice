@@ -1,0 +1,1391 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#137347">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Excel練功房">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Excel 練功房</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap">
+<style>
+/* Layout: a worksheet. Formula bar header, sheet tabs as navigation, grid-paper surfaces below. */
+:root {
+  --bg: #f2f5f2;
+  --surface: #ffffff;
+  --sunk: #e8eee9;
+  --ink: #17201c;
+  --muted: #5b6a63;
+  --line: #d3dcd6;
+  --accent: #137347;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefe3;
+  --ok: #137347;
+  --ok-soft: #dcefe3;
+  --bad: #c0392b;
+  --bad-soft: #fbe3df;
+  --warn: #a8670a;
+  --warn-soft: #fbefd9;
+  --ref1: #2b5fd9;
+  --ref1-soft: #dfe8fd;
+  --ref2: #c0392b;
+  --ref2-soft: #fbe3df;
+  --ref3: #7a43c4;
+  --ref3-soft: #ede3fa;
+  --key-face: #fbfcfb;
+  --key-edge: #c3cdc6;
+  --head: #eef2ef;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111714; --surface: #18201c; --sunk: #202a25; --ink: #e4ebe7; --muted: #98a9a0; --line: #2e3a34;
+    --accent: #43b884; --accent-ink: #0c1410; --accent-soft: #1b3a2b;
+    --ok: #43b884; --ok-soft: #1b3a2b; --bad: #ff8a7a; --bad-soft: #3d2320; --warn: #f0b24a; --warn-soft: #3a2e17;
+    --ref1: #86a8ff; --ref1-soft: #1f2b4a; --ref2: #ff8a7a; --ref2-soft: #3d2320; --ref3: #c6a0ff; --ref3-soft: #2e2442;
+    --key-face: #222c27; --key-edge: #3b4943; --head: #1d2622;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111714; --surface: #18201c; --sunk: #202a25; --ink: #e4ebe7; --muted: #98a9a0; --line: #2e3a34;
+  --accent: #43b884; --accent-ink: #0c1410; --accent-soft: #1b3a2b;
+  --ok: #43b884; --ok-soft: #1b3a2b; --bad: #ff8a7a; --bad-soft: #3d2320; --warn: #f0b24a; --warn-soft: #3a2e17;
+  --ref1: #86a8ff; --ref1-soft: #1f2b4a; --ref2: #ff8a7a; --ref2-soft: #3d2320; --ref3: #c6a0ff; --ref3-soft: #2e2442;
+  --key-face: #222c27; --key-edge: #3b4943; --head: #1d2622;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+
+/* Header */
+.top { display: flex; flex-direction: column; gap: 14px; }
+.brand { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+.brand h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 5vw, 40px); letter-spacing: 0.02em; }
+.brand p { color: var(--muted); }
+.fbar {
+  display: flex; align-items: stretch; min-width: 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+  font-family: var(--font-mono); font-size: 14px; overflow: hidden;
+}
+.fbar .namebox { flex: 0 0 auto; width: 72px; padding: 7px 10px; border-right: 1px solid var(--line); color: var(--muted); }
+.fbar .fx { flex: 0 0 auto; padding: 7px 12px; border-right: 1px solid var(--line); color: var(--muted); font-style: italic; }
+.fbar code { flex: 1 1 auto; min-width: 0; padding: 7px 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: inherit; }
+.r1 { color: var(--ref1); } .r2 { color: var(--ref2); } .r3 { color: var(--ref3); }
+
+/* Sheet tabs */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs button {
+  flex: 0 0 auto; border: 1px solid transparent; border-bottom: 0; background: transparent;
+  padding: 9px 16px 8px; border-radius: 6px 6px 0 0; color: var(--muted); font-weight: 500;
+  box-shadow: inset 0 -3px 0 transparent;
+}
+.tabs button:hover { color: var(--ink); background: var(--sunk); }
+.tabs button[aria-selected="true"] {
+  background: var(--surface); border-color: var(--line); color: var(--accent); font-weight: 700;
+  box-shadow: inset 0 -3px 0 var(--accent); margin-bottom: -1px;
+}
+
+.view { display: flex; flex-direction: column; gap: 16px; }
+
+/* Controls */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.search {
+  flex: 1 1 260px; min-width: 0; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface);
+}
+.toggle { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); white-space: nowrap; }
+.toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
+select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.field { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface); padding: 5px 12px; border-radius: 999px;
+  font-size: 14px; color: var(--muted);
+}
+.chip:hover { color: var(--ink); }
+.chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.chip .n { font-family: var(--font-mono); font-size: 12px; margin-left: 4px; opacity: .75; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 7px 14px; color: var(--muted); }
+.seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); padding: 8px 16px; border-radius: 8px; font-weight: 500;
+}
+.btn:hover { background: var(--sunk); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.small { padding: 5px 10px; font-size: 13px; }
+.btn.danger { color: var(--bad); }
+
+/* Keycaps */
+.keys { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.kbd {
+  display: inline-block; min-width: 30px; padding: 2px 8px; text-align: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600; line-height: 1.6;
+  background: var(--key-face); border: 1px solid var(--key-edge); border-bottom-width: 3px; border-radius: 6px;
+  white-space: nowrap;
+}
+.keys .sep { color: var(--muted); font-size: 12px; }
+.keys .then { color: var(--muted); font-size: 12px; padding: 0 2px; }
+.big .kbd { font-size: 20px; min-width: 48px; padding: 6px 14px; border-radius: 9px; border-bottom-width: 4px; }
+.big .sep { font-size: 18px; }
+
+/* Lookup box */
+.lookup {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+  padding: 14px 16px; border: 2px dashed var(--line); border-radius: 10px; background: var(--surface); cursor: text;
+}
+.lookup:focus { border-color: var(--accent); border-style: solid; outline: none; }
+.lookup-label { font-weight: 700; color: var(--accent); white-space: nowrap; }
+.lookup-out { color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; min-width: 0; }
+.lookup-out strong { color: var(--ink); }
+
+/* Shortcut list */
+.group { display: flex; flex-direction: column; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.group-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 16px; background: var(--head); border-bottom: 1px solid var(--line); }
+.group-head h2 { font-family: var(--font-display); font-size: 18px; }
+.krow { display: grid; grid-template-columns: minmax(150px, 260px) 1fr auto; gap: 6px 16px; align-items: center; padding: 9px 16px; border-top: 1px solid var(--line); }
+.krow:first-of-type { border-top: 0; }
+.krow .desc { min-width: 0; }
+.krow .note { display: block; color: var(--muted); font-size: 13px; }
+.badge { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 4px; font-weight: 500; white-space: nowrap; vertical-align: 1px; }
+.badge.top { background: var(--warn-soft); color: var(--warn); }
+.badge.ver { background: var(--ref1-soft); color: var(--ref1); }
+.badge.res { background: var(--sunk); color: var(--muted); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.dot.lv1 { background: var(--warn); }
+.dot.lv2 { background: var(--ok); }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; }
+
+/* Drill */
+.drill-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.meta { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 14px; flex-wrap: wrap; }
+.tag { color: var(--accent); font-weight: 700; }
+.prompt { font-family: var(--font-display); font-size: clamp(22px, 3.6vw, 30px); font-weight: 900; line-height: 1.35; }
+.capture {
+  min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  border: 2px dashed var(--line); border-radius: 12px; background: var(--bg); padding: 16px; text-align: center; cursor: pointer;
+}
+.capture:focus { outline: none; border-color: var(--accent); border-style: solid; }
+.capture-hint { color: var(--muted); font-size: 14px; }
+.capture.ok { border-color: var(--ok); border-style: solid; background: var(--ok-soft); }
+.capture.bad { border-color: var(--bad); border-style: solid; background: var(--bad-soft); animation: shake .28s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .capture.bad { animation: none; } }
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.choice {
+  display: flex; gap: 10px; align-items: center; text-align: left; min-width: 0;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 12px 14px;
+}
+.choice:hover:not(:disabled) { border-color: var(--accent); }
+.choice .letter { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 6px; background: var(--sunk); display: grid; place-items: center; font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.choice .body { min-width: 0; overflow-wrap: anywhere; }
+.choice code { font-family: var(--font-mono); font-size: 14px; }
+.choice.correct { border-color: var(--ok); background: var(--ok-soft); }
+.choice.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.choice:disabled { cursor: default; }
+.feedback { min-height: 26px; font-weight: 500; }
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+.feedback .why { display: block; color: var(--ink); font-weight: 400; margin-top: 4px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.actions .spacer { flex: 1; }
+.side { display: flex; flex-direction: column; gap: 14px; }
+.side h3 { font-size: 14px; color: var(--muted); font-weight: 700; letter-spacing: 0.04em; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { background: var(--bg); border-radius: 8px; padding: 10px; text-align: center; }
+.tile b { display: block; font-family: var(--font-mono); font-size: 22px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 12px; color: var(--muted); }
+.meter { height: 8px; background: var(--sunk); border-radius: 4px; overflow: hidden; }
+.meter span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+.weak { display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+.weak-item { display: flex; flex-direction: column; gap: 2px; }
+.weak-item small { color: var(--muted); }
+
+/* Functions */
+.func-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 12px; }
+.fn { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fn-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.fn-name { font-family: var(--font-mono); font-weight: 600; font-size: 17px; color: var(--accent); }
+.fn-cat { color: var(--muted); font-size: 13px; }
+.syntax, .example { font-family: var(--font-mono); font-size: 13px; background: var(--bg); border-radius: 6px; padding: 7px 10px; overflow-x: auto; white-space: nowrap; }
+.syntax .arg { color: var(--ref1); }
+.syntax .opt { color: var(--muted); }
+.example { display: flex; flex-wrap: wrap; gap: 4px 10px; white-space: normal; overflow-wrap: anywhere; }
+.example .res { color: var(--muted); }
+.example .res b { color: var(--ink); font-weight: 600; }
+.fn .tip { color: var(--muted); font-size: 13px; }
+
+/* Quiz */
+.quiz-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.quiz-top .prog { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.sheet-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.sheet { border-collapse: collapse; font-size: 14px; width: 100%; min-width: 560px; }
+.sheet th, .sheet td { border: 1px solid var(--line); padding: 5px 10px; white-space: nowrap; }
+.sheet th { background: var(--head); color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 12px; text-align: center; }
+.sheet tr:first-child th { border-top: 0; }
+.sheet th:first-child { border-left: 0; width: 36px; }
+.sheet td.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.sheet td.hdr { font-weight: 700; }
+.sheet td.h1 { background: var(--ref1-soft); box-shadow: inset 0 0 0 1px var(--ref1); }
+.sheet td.h2 { background: var(--ref2-soft); box-shadow: inset 0 0 0 1px var(--ref2); }
+.sheet td.h3 { background: var(--ref3-soft); box-shadow: inset 0 0 0 1px var(--ref3); }
+.q-formula { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; font-family: var(--font-mono); font-size: 15px; }
+.q-formula .fx { padding: 8px 12px; border-right: 1px solid var(--line); color: var(--muted); font-style: italic; background: var(--bg); }
+.q-formula code { padding: 8px 12px; font-family: inherit; overflow-x: auto; white-space: nowrap; min-width: 0; }
+.q-text { font-size: 18px; font-weight: 500; }
+.done { text-align: center; align-items: center; }
+.done .score { font-family: var(--font-display); font-size: 56px; font-weight: 900; color: var(--accent); line-height: 1.1; }
+
+.foot { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 4px; }
+
+@media (max-width: 480px) {
+  .tabs button { flex: 1 1 auto; padding: 8px 6px 7px; font-size: 14px; }
+  .brand p { font-size: 14px; }
+}
+@media (max-width: 760px) {
+  .drill-grid { grid-template-columns: 1fr; }
+  .krow { grid-template-columns: 1fr auto; }
+  .krow .keys { grid-column: 1 / -1; }
+  .choices { grid-template-columns: 1fr; }
+  .card { padding: 16px; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Excel 練功房</h1>
+      <p>Windows 版常用快捷鍵與函數，查得到，也練得到。</p>
+    </div>
+    <div class="fbar" aria-hidden="true">
+      <span class="namebox" id="nameBox">A1</span>
+      <span class="fx">fx</span>
+      <code id="fbarText">=練習(<span class="r1">快捷鍵</span>, <span class="r2">函數</span>)</code>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="功能分頁">
+    <button role="tab" id="tab-keys" data-view="keys" aria-selected="true">快捷鍵速查</button>
+    <button role="tab" id="tab-drill" data-view="drill" aria-selected="false">快捷鍵實戰</button>
+    <button role="tab" id="tab-func" data-view="func" aria-selected="false">函數速查</button>
+    <button role="tab" id="tab-quiz" data-view="quiz" aria-selected="false">函數測驗</button>
+  </nav>
+
+  <main>
+    <!-- 快捷鍵速查 -->
+    <section class="view" id="view-keys" role="tabpanel" aria-labelledby="tab-keys">
+      <div class="lookup" id="lookup" tabindex="0" aria-label="按鍵查詢：聚焦後按下組合鍵">
+        <span class="lookup-label">按按看</span>
+        <span class="lookup-out" id="lookupOut">點這裡，再按下任一組合鍵，馬上告訴你它在 Excel 裡做什麼。</span>
+      </div>
+      <div class="toolbar">
+        <input class="search" type="search" id="keySearch" placeholder="搜尋功能或按鍵，例如：篩選、Ctrl+D" autocomplete="off">
+        <label class="toggle"><input type="checkbox" id="keyTopOnly"> 只看最常用</label>
+      </div>
+      <div class="chips" id="keyCats"></div>
+      <div class="view" id="keyList"></div>
+    </section>
+
+    <!-- 快捷鍵實戰 -->
+    <section class="view" id="view-drill" role="tabpanel" aria-labelledby="tab-drill" hidden>
+      <div class="toolbar">
+        <label class="field" for="drillCat">範圍 <select id="drillCat"></select></label>
+        <div class="seg" role="group" aria-label="作答方式">
+          <button id="modeKeys" class="on" type="button">實際按鍵</button>
+          <button id="modeChoice" type="button">選擇題</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="drillWeakFirst" checked> 常錯的多出幾次</label>
+      </div>
+      <div class="drill-grid">
+        <div class="card">
+          <div class="meta"><span class="tag" id="drillTag"></span><span id="drillInfo"></span></div>
+          <div class="prompt" id="drillPrompt"></div>
+          <div class="capture" id="capture" tabindex="0" aria-label="按鍵作答區">
+            <div class="keys big" id="captureKeys"></div>
+            <div class="capture-hint" id="captureHint">直接在鍵盤上按下快捷鍵</div>
+          </div>
+          <div class="choices" id="drillChoices" hidden></div>
+          <div class="feedback" id="drillFeedback" aria-live="polite"></div>
+          <div class="actions">
+            <button class="btn" id="drillHint" type="button">提示</button>
+            <button class="btn" id="drillReveal" type="button">看答案</button>
+            <span class="spacer"></span>
+            <button class="btn primary" id="drillNext" type="button">下一題</button>
+          </div>
+        </div>
+        <aside class="card side">
+          <div class="tiles">
+            <div class="tile"><b id="stCorrect">0</b><span>本次答對</span></div>
+            <div class="tile"><b id="stStreak">0</b><span>連續答對</span></div>
+            <div class="tile"><b id="stRate">–</b><span>正確率</span></div>
+          </div>
+          <h3>熟練度</h3>
+          <div class="meter"><span id="masterBar"></span></div>
+          <p class="capture-hint" id="masterText"></p>
+          <h3>最常錯</h3>
+          <div class="weak" id="weakList"></div>
+          <button class="btn small danger" id="resetProgress" type="button">重設練習紀錄</button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 函數速查 -->
+    <section class="view" id="view-func" role="tabpanel" aria-labelledby="tab-func" hidden>
+      <div class="toolbar">
+        <input class="search" type="search" id="funcSearch" placeholder="搜尋函數或用途，例如：VLOOKUP、加總、日期" autocomplete="off">
+        <label class="toggle"><input type="checkbox" id="funcTopOnly"> 只看最常用</label>
+      </div>
+      <div class="chips" id="funcCats"></div>
+      <div class="func-grid" id="funcList"></div>
+    </section>
+
+    <!-- 函數測驗 -->
+    <section class="view" id="view-quiz" role="tabpanel" aria-labelledby="tab-quiz" hidden>
+      <div class="quiz-top">
+        <span class="prog" id="quizProg"></span>
+        <div class="toolbar">
+          <label class="field" for="quizLen">題數 <select id="quizLen"><option value="10">10 題</option><option value="20">20 題</option><option value="all">全部</option></select></label>
+          <button class="btn" id="quizRestart" type="button">重新出題</button>
+        </div>
+      </div>
+      <div class="sheet-wrap"><table class="sheet" id="sheet" aria-label="練習用資料表"></table></div>
+      <div class="card" id="quizCard">
+        <p class="q-text" id="qText"></p>
+        <div class="q-formula" id="qFormulaBox"><span class="fx">fx</span><code id="qFormula"></code></div>
+        <div class="choices" id="qChoices"></div>
+        <div class="feedback" id="qFeedback" aria-live="polite"></div>
+        <div class="actions"><span class="spacer"></span><button class="btn primary" id="qNext" type="button">下一題</button></div>
+      </div>
+      <div class="card done" id="quizDone" hidden>
+        <div class="score" id="doneScore"></div>
+        <p id="doneText"></p>
+        <div class="actions"><button class="btn primary" id="doneRetry" type="button">再考一次</button><button class="btn" id="doneWrong" type="button">只重考答錯的題目</button></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>快捷鍵以 Windows 版 Microsoft 365 / Excel 2021 為準。實戰練習請先切換成英文輸入法，否則注音輸入法會攔下按鍵。</p>
+    <p>少數組合鍵（例如 Ctrl+N、Ctrl+W、Ctrl+PageDown）會被瀏覽器搶先處理，這些題目會自動改成選擇題。</p>
+    <p>手機使用：iPhone 用 Safari 開啟後按「分享 → 加入主畫面」；Android 用 Chrome 開啟後按右上角「⋮ → 加到主畫面」。加入後就像 App 一樣，打開過一次之後沒有網路也能用。</p>
+  </footer>
+</div>
+
+<script>
+// Excel (Windows) 常用快捷鍵
+// k: 按鍵，"+" 表示同時按，"," 表示依序按（功能區按鍵提示）
+// top: 最常用；r: 瀏覽器會攔截，練習時改為選擇題；ime: 可能與中文輸入法衝突
+window.KEY_CATS = [
+  { id: "file", name: "檔案與基本操作" },
+  { id: "nav", name: "移動與選取" },
+  { id: "edit", name: "編輯與填入" },
+  { id: "fmt", name: "格式設定" },
+  { id: "formula", name: "公式" },
+  { id: "data", name: "資料與分析" },
+  { id: "sheet", name: "工作表與檢視" }
+];
+
+window.SHORTCUTS = [
+  // 檔案與基本操作
+  { k: "Ctrl+S", d: "儲存檔案", c: "file", top: 1 },
+  { k: "F12", d: "另存新檔", c: "file", r: 1 },
+  { k: "Ctrl+O", d: "開啟舊檔", c: "file" },
+  { k: "Ctrl+N", d: "新增空白活頁簿", c: "file", r: 1 },
+  { k: "Ctrl+W", d: "關閉目前的活頁簿", c: "file", r: 1 },
+  { k: "Ctrl+P", d: "列印 / 預覽列印", c: "file" },
+  { k: "Ctrl+Z", d: "復原上一個動作", c: "file", top: 1 },
+  { k: "Ctrl+Y", d: "取消復原（重做）", c: "file", top: 1 },
+  { k: "Ctrl+C", d: "複製", c: "file", top: 1 },
+  { k: "Ctrl+X", d: "剪下", c: "file", top: 1 },
+  { k: "Ctrl+V", d: "貼上", c: "file", top: 1 },
+  { k: "Ctrl+Alt+V", d: "選擇性貼上（只貼值、格式、轉置…）", c: "file", top: 1 },
+  { k: "Ctrl+F", d: "尋找", c: "file", top: 1 },
+  { k: "Ctrl+H", d: "取代", c: "file", top: 1 },
+  { k: "Ctrl+G", d: "到（跳到指定儲存格，也可用 F5）", c: "file", n: "在「到」對話框按「特殊」可選取空白格、公式等" },
+  { k: "F7", d: "拼字檢查", c: "file" },
+  { k: "Alt+F4", d: "關閉 Excel", c: "file", r: 1 },
+
+  // 移動與選取
+  { k: "Ctrl+Down", d: "往下跳到資料區域的最後一列", c: "nav", top: 1, n: "↑ ← → 同理，遇到空白格會停下" },
+  { k: "Ctrl+Right", d: "往右跳到資料區域的最後一欄", c: "nav" },
+  { k: "Ctrl+Shift+Down", d: "從目前儲存格往下選取到資料最後一列", c: "nav", top: 1 },
+  { k: "Ctrl+Shift+Right", d: "從目前儲存格往右選取到資料最後一欄", c: "nav" },
+  { k: "Shift+Right", d: "選取範圍往右擴大一格", c: "nav" },
+  { k: "Ctrl+Home", d: "回到 A1 儲存格", c: "nav", top: 1 },
+  { k: "Ctrl+End", d: "跳到工作表最後一個使用中的儲存格", c: "nav" },
+  { k: "Ctrl+A", d: "選取目前資料區域（再按一次選取整張工作表）", c: "nav", top: 1 },
+  { k: "Ctrl+Space", d: "選取整欄", c: "nav", top: 1, ime: 1 },
+  { k: "Shift+Space", d: "選取整列", c: "nav", top: 1, ime: 1 },
+  { k: "Ctrl+PageDown", d: "切換到下一個工作表", c: "nav", top: 1, r: 1 },
+  { k: "Ctrl+PageUp", d: "切換到上一個工作表", c: "nav", r: 1 },
+  { k: "Ctrl+Backspace", d: "捲動畫面，讓作用中儲存格回到視野內", c: "nav" },
+  { k: "F8", d: "開啟 / 關閉延伸選取模式", c: "nav" },
+
+  // 編輯與填入
+  { k: "F2", d: "編輯作用中儲存格（游標放在內容最後）", c: "edit", top: 1 },
+  { k: "Alt+Enter", d: "在同一個儲存格內換行", c: "edit", top: 1 },
+  { k: "Ctrl+Enter", d: "把輸入的內容一次填入所有選取的儲存格", c: "edit", top: 1 },
+  { k: "Ctrl+D", d: "向下填滿（複製上方儲存格）", c: "edit", top: 1 },
+  { k: "Ctrl+R", d: "向右填滿（複製左方儲存格）", c: "edit" },
+  { k: "Ctrl+E", d: "快速填入（依範例自動拆分或合併資料）", c: "edit", top: 1 },
+  { k: "Ctrl+;", d: "輸入今天的日期", c: "edit", top: 1 },
+  { k: "Ctrl+Shift+;", d: "輸入目前的時間", c: "edit", a: "Ctrl + :" },
+  { k: "Ctrl+Shift+=", d: "插入儲存格 / 列 / 欄", c: "edit", top: 1, a: "Ctrl + +" },
+  { k: "Ctrl+-", d: "刪除儲存格 / 列 / 欄", c: "edit", top: 1 },
+  { k: "Delete", d: "清除儲存格內容（保留格式）", c: "edit" },
+  { k: "Ctrl+'", d: "複製上方儲存格的公式到目前儲存格", c: "edit" },
+  { k: "Ctrl+K", d: "插入超連結", c: "edit" },
+  { k: "Shift+F2", d: "新增 / 編輯附註", c: "edit" },
+  { k: "Ctrl+9", d: "隱藏選取的列", c: "edit" },
+  { k: "Ctrl+Shift+9", d: "取消隱藏列", c: "edit", a: "Ctrl + (" },
+  { k: "Ctrl+0", d: "隱藏選取的欄", c: "edit" },
+
+  // 格式設定
+  { k: "Ctrl+1", d: "開啟「儲存格格式」對話框", c: "fmt", top: 1 },
+  { k: "Ctrl+B", d: "粗體", c: "fmt", top: 1 },
+  { k: "Ctrl+I", d: "斜體", c: "fmt" },
+  { k: "Ctrl+U", d: "底線", c: "fmt" },
+  { k: "Ctrl+5", d: "刪除線", c: "fmt" },
+  { k: "Ctrl+Shift+1", d: "套用數值格式（千分位、兩位小數）", c: "fmt", top: 1, a: "Ctrl + !" },
+  { k: "Ctrl+Shift+4", d: "套用貨幣格式", c: "fmt", a: "Ctrl + $" },
+  { k: "Ctrl+Shift+5", d: "套用百分比格式", c: "fmt", top: 1, a: "Ctrl + %" },
+  { k: "Ctrl+Shift+3", d: "套用日期格式", c: "fmt", a: "Ctrl + #" },
+  { k: "Ctrl+Shift+`", d: "恢復成「通用」格式", c: "fmt", a: "Ctrl + ~" },
+  { k: "Ctrl+Shift+7", d: "加上外框線", c: "fmt", a: "Ctrl + &" },
+  { k: "Ctrl+Shift+-", d: "移除外框線", c: "fmt", a: "Ctrl + _" },
+  { k: "Alt,H,O,I", d: "自動調整欄寬", c: "fmt", top: 1, n: "先按 Alt 放開，再依序按 H、O、I" },
+  { k: "Alt,H,H", d: "選擇填滿色彩", c: "fmt" },
+
+  // 公式
+  { k: "Alt+=", d: "自動加總（插入 SUM）", c: "formula", top: 1 },
+  { k: "F4", d: "編輯公式時切換絕對 / 相對參照（$A$1 → A$1 → $A1 → A1）", c: "formula", top: 1, n: "不在編輯狀態時，F4 會重複上一個動作" },
+  { k: "F9", d: "重新計算所有工作表", c: "formula", n: "編輯公式時選取一段再按 F9，可看到那段的計算結果" },
+  { k: "Ctrl+`", d: "顯示 / 隱藏儲存格中的公式", c: "formula", top: 1 },
+  { k: "Shift+F3", d: "開啟「插入函數」對話框", c: "formula" },
+  { k: "Tab", d: "輸入函數名稱時，自動完成選中的函數", c: "formula" },
+  { k: "Ctrl+Shift+Enter", d: "輸入陣列公式（舊版 Excel）", c: "formula", n: "Microsoft 365 的動態陣列直接按 Enter 即可" },
+  { k: "Ctrl+Shift+U", d: "展開 / 收合資料編輯列", c: "formula" },
+  { k: "Ctrl+F3", d: "開啟名稱管理員", c: "formula" },
+  { k: "F3", d: "在公式中貼上已定義的名稱", c: "formula" },
+  { k: "Ctrl+[", d: "選取公式直接參照到的儲存格", c: "formula" },
+
+  // 資料與分析
+  { k: "Ctrl+T", d: "把資料範圍轉成表格", c: "data", top: 1, r: 1 },
+  { k: "Ctrl+Shift+L", d: "開啟 / 關閉篩選", c: "data", top: 1 },
+  { k: "Alt+Down", d: "在有篩選鈕的標題上，打開篩選下拉選單", c: "data" },
+  { k: "Ctrl+Q", d: "快速分析（格式化、圖表、合計）", c: "data" },
+  { k: "Alt+F1", d: "用選取的資料在同一頁建立圖表", c: "data" },
+  { k: "F11", d: "用選取的資料建立獨立的圖表工作表", c: "data", r: 1 },
+  { k: "Alt,N,V", d: "插入樞紐分析表", c: "data", top: 1, n: "Microsoft 365 會再出現選單，按 T 選「從表格/範圍」" },
+  { k: "Alt,A,S,S", d: "開啟「排序」對話框", c: "data" },
+  { k: "Alt,A,M", d: "移除重複項", c: "data" },
+  { k: "Alt+Shift+Right", d: "將選取的列或欄組成群組", c: "data" },
+  { k: "Alt+Shift+Left", d: "取消群組", c: "data" },
+
+  // 工作表與檢視
+  { k: "Shift+F11", d: "插入新的工作表", c: "sheet", top: 1 },
+  { k: "Alt,H,O,R", d: "重新命名工作表", c: "sheet" },
+  { k: "Alt,W,F,F", d: "凍結窗格", c: "sheet", top: 1 },
+  { k: "Ctrl+F1", d: "顯示 / 隱藏功能區", c: "sheet" },
+  { k: "Ctrl+Tab", d: "切換到下一個開啟的活頁簿", c: "sheet", r: 1 },
+  { k: "Ctrl+F2", d: "列印預覽", c: "sheet" }
+];
+
+</script>
+<script>
+// Excel 常用函數速查
+// a: 引數（[ ] 為可省略）；ex: 範例；r: 範例結果；v: 需要的版本
+window.FUNC_CATS = [
+  { id: "math", name: "數學與加總" },
+  { id: "stat", name: "統計與計數" },
+  { id: "logic", name: "邏輯判斷" },
+  { id: "lookup", name: "查詢與參照" },
+  { id: "text", name: "文字處理" },
+  { id: "date", name: "日期與時間" },
+  { id: "array", name: "動態陣列" }
+];
+
+window.FUNCS = [
+  // 數學與加總
+  { f: "SUM", c: "math", top: 1, a: ["number1", "[number2]", "…"], d: "把數字或範圍加總。", ex: "=SUM(B2:B10)", r: "B2 到 B10 的總和", t: "快捷鍵 Alt+= 可自動插入。" },
+  { f: "SUMIF", c: "math", top: 1, a: ["range", "criteria", "[sum_range]"], d: "加總符合一個條件的值。", ex: "=SUMIF(A2:A9,\"北區\",C2:C9)", r: "A 欄為「北區」那幾列的 C 欄總和", t: "條件可寫成 \">1000\"、\"<>\"&E1、\"*筆電*\"。" },
+  { f: "SUMIFS", c: "math", top: 1, a: ["sum_range", "criteria_range1", "criteria1", "[criteria_range2, criteria2]", "…"], d: "加總同時符合多個條件的值。", ex: "=SUMIFS(C2:C9,A2:A9,\"北區\",B2:B9,\"筆電\")", r: "北區且產品為筆電的金額總和", t: "注意：加總範圍放第一個，跟 SUMIF 相反。" },
+  { f: "SUMPRODUCT", c: "math", a: ["array1", "[array2]", "…"], d: "把對應元素相乘後加總，也能做多條件計算。", ex: "=SUMPRODUCT(B2:B4,C2:C4)", r: "單價 × 數量 的總金額", t: "條件寫法：=SUMPRODUCT((A2:A9=\"北區\")*C2:C9)。" },
+  { f: "ROUND", c: "math", top: 1, a: ["number", "num_digits"], d: "四捨五入到指定位數。", ex: "=ROUND(1234.567,1)", r: "1234.6", t: "位數為負數時往整數位進位：ROUND(1234,-2) = 1200。" },
+  { f: "ROUNDUP", c: "math", a: ["number", "num_digits"], d: "無條件進位。", ex: "=ROUNDUP(3.21,0)", r: "4" },
+  { f: "ROUNDDOWN", c: "math", a: ["number", "num_digits"], d: "無條件捨去。", ex: "=ROUNDDOWN(3.79,0)", r: "3" },
+  { f: "INT", c: "math", a: ["number"], d: "取不大於該數的最大整數。", ex: "=INT(7.9)", r: "7", t: "負數會往下取：INT(-3.2) = -4。" },
+  { f: "MOD", c: "math", a: ["number", "divisor"], d: "取餘數。", ex: "=MOD(17,5)", r: "2", t: "判斷奇偶數：=MOD(A2,2)=0。" },
+  { f: "ABS", c: "math", a: ["number"], d: "取絕對值。", ex: "=ABS(-58)", r: "58" },
+  { f: "SUBTOTAL", c: "math", a: ["function_num", "ref1", "…"], d: "小計，可忽略被篩選隱藏的列。", ex: "=SUBTOTAL(9,C2:C100)", r: "篩選後看得到的列的總和", t: "9 = 加總、1 = 平均、3 = COUNTA；109 會連手動隱藏的列也忽略。" },
+  { f: "RANDBETWEEN", c: "math", a: ["bottom", "top"], d: "產生指定範圍內的隨機整數。", ex: "=RANDBETWEEN(1,100)", r: "1 到 100 的隨機整數", t: "每次重新計算都會變，按 F9 可重抽。" },
+
+  // 統計與計數
+  { f: "AVERAGE", c: "stat", top: 1, a: ["number1", "[number2]", "…"], d: "計算平均值。", ex: "=AVERAGE(B2:B10)", r: "B2 到 B10 的平均", t: "空白格會被略過，但 0 會算進去。" },
+  { f: "AVERAGEIF", c: "stat", a: ["range", "criteria", "[average_range]"], d: "計算符合條件的平均值。", ex: "=AVERAGEIF(A2:A9,\"南區\",C2:C9)", r: "南區的平均金額", t: "多個條件用 AVERAGEIFS。" },
+  { f: "COUNT", c: "stat", top: 1, a: ["value1", "[value2]", "…"], d: "計算含有「數字」的儲存格數量。", ex: "=COUNT(B2:B10)", r: "B2:B10 中數字的個數", t: "文字不算，要算非空白請用 COUNTA。" },
+  { f: "COUNTA", c: "stat", top: 1, a: ["value1", "[value2]", "…"], d: "計算非空白的儲存格數量。", ex: "=COUNTA(A2:A100)", r: "A 欄有填資料的列數" },
+  { f: "COUNTBLANK", c: "stat", a: ["range"], d: "計算空白儲存格數量。", ex: "=COUNTBLANK(C2:C50)", r: "C 欄還沒填的格數" },
+  { f: "COUNTIF", c: "stat", top: 1, a: ["range", "criteria"], d: "計算符合一個條件的儲存格數量。", ex: "=COUNTIF(B2:B9,\"筆電\")", r: "產品是筆電的筆數", t: "找重複：=COUNTIF($A$2:$A$100,A2)>1。" },
+  { f: "COUNTIFS", c: "stat", top: 1, a: ["criteria_range1", "criteria1", "[criteria_range2, criteria2]", "…"], d: "計算同時符合多個條件的數量。", ex: "=COUNTIFS(A2:A9,\"北區\",C2:C9,\">5000\")", r: "北區且金額大於 5000 的筆數" },
+  { f: "MAX", c: "stat", top: 1, a: ["number1", "[number2]", "…"], d: "取最大值。", ex: "=MAX(C2:C9)", r: "最高金額" },
+  { f: "MIN", c: "stat", top: 1, a: ["number1", "[number2]", "…"], d: "取最小值。", ex: "=MIN(C2:C9)", r: "最低金額" },
+  { f: "MAXIFS", c: "stat", v: "2019", a: ["max_range", "criteria_range1", "criteria1", "…"], d: "取符合條件的最大值。", ex: "=MAXIFS(C2:C9,A2:A9,\"中區\")", r: "中區的最高金額", t: "MINIFS 用法相同，取最小值。" },
+  { f: "LARGE", c: "stat", a: ["array", "k"], d: "取第 k 大的值。", ex: "=LARGE(C2:C9,2)", r: "第二高的金額", t: "SMALL 取第 k 小的值。" },
+  { f: "RANK.EQ", c: "stat", a: ["number", "ref", "[order]"], d: "傳回數字在範圍中的排名。", ex: "=RANK.EQ(C2,$C$2:$C$9)", r: "C2 由大到小的名次", t: "order 填 1 改成由小到大；範圍記得加 $ 鎖定。" },
+  { f: "MEDIAN", c: "stat", a: ["number1", "[number2]", "…"], d: "取中位數。", ex: "=MEDIAN(1,3,8,10)", r: "5.5" },
+
+  // 邏輯判斷
+  { f: "IF", c: "logic", top: 1, a: ["logical_test", "value_if_true", "[value_if_false]"], d: "依條件傳回不同結果。", ex: "=IF(B2>=60,\"及格\",\"不及格\")", r: "B2 ≥ 60 顯示「及格」", t: "文字要加雙引號；比較符號為 >=、<=、<>。" },
+  { f: "IFS", c: "logic", v: "2019", a: ["test1", "value1", "[test2, value2]", "…"], d: "依序檢查多個條件，取第一個成立的結果。", ex: "=IFS(B2>=90,\"A\",B2>=80,\"B\",TRUE,\"C\")", r: "依分數給等第", t: "最後放 TRUE 當作「其他」。" },
+  { f: "AND", c: "logic", top: 1, a: ["logical1", "[logical2]", "…"], d: "所有條件都成立才是 TRUE。", ex: "=AND(B2>=60,C2>=60)", r: "兩科都及格才 TRUE", t: "常搭配 IF：=IF(AND(…),\"是\",\"否\")。" },
+  { f: "OR", c: "logic", top: 1, a: ["logical1", "[logical2]", "…"], d: "任一條件成立就是 TRUE。", ex: "=OR(A2=\"北區\",A2=\"中區\")", r: "北區或中區時 TRUE" },
+  { f: "NOT", c: "logic", a: ["logical"], d: "把 TRUE 變 FALSE，FALSE 變 TRUE。", ex: "=NOT(ISBLANK(A2))", r: "A2 有填資料時 TRUE" },
+  { f: "IFERROR", c: "logic", top: 1, a: ["value", "value_if_error"], d: "公式出錯時改顯示指定內容。", ex: "=IFERROR(B2/C2,0)", r: "C2 為 0 時顯示 0 而不是 #DIV/0!", t: "只想處理查無資料，可用 IFNA。" },
+  { f: "SWITCH", c: "logic", v: "2019", a: ["expression", "value1", "result1", "…", "[default]"], d: "把一個值對照成另一個值。", ex: "=SWITCH(A2,1,\"一月\",2,\"二月\",\"其他\")", r: "A2 為 1 顯示「一月」" },
+
+  // 查詢與參照
+  { f: "VLOOKUP", c: "lookup", top: 1, a: ["lookup_value", "table_array", "col_index_num", "[range_lookup]"], d: "在範圍第一欄找值，傳回同一列指定欄的資料。", ex: "=VLOOKUP(\"P002\",A2:D50,3,FALSE)", r: "編號 P002 那列的第 3 欄", t: "第 4 個引數填 FALSE 才是完全符合；只能往右查。" },
+  { f: "HLOOKUP", c: "lookup", a: ["lookup_value", "table_array", "row_index_num", "[range_lookup]"], d: "在範圍第一列找值，傳回同一欄指定列的資料。", ex: "=HLOOKUP(\"三月\",B1:M5,4,FALSE)", r: "三月那欄的第 4 列" },
+  { f: "XLOOKUP", c: "lookup", top: 1, v: "2021", a: ["lookup_value", "lookup_array", "return_array", "[if_not_found]", "[match_mode]", "[search_mode]"], d: "新一代查詢函數，可往左查、預設完全符合。", ex: "=XLOOKUP(\"P002\",A2:A50,C2:C50,\"查無\")", r: "P002 對應的 C 欄資料，找不到顯示「查無」", t: "search_mode 填 -1 會從最後一筆往回找。" },
+  { f: "INDEX", c: "lookup", top: 1, a: ["array", "row_num", "[column_num]"], d: "傳回範圍中第幾列、第幾欄的值。", ex: "=INDEX(B2:D10,3,2)", r: "範圍內第 3 列第 2 欄", t: "搭配 MATCH 可取代 VLOOKUP，往左查也行。" },
+  { f: "MATCH", c: "lookup", top: 1, a: ["lookup_value", "lookup_array", "[match_type]"], d: "傳回值在範圍中的位置（第幾個）。", ex: "=MATCH(\"中區\",A2:A9,0)", r: "「中區」第一次出現的位置", t: "match_type 填 0 為完全符合。" },
+  { f: "CHOOSE", c: "lookup", a: ["index_num", "value1", "[value2]", "…"], d: "依序號從清單中挑一個值。", ex: "=CHOOSE(2,\"甲\",\"乙\",\"丙\")", r: "乙" },
+  { f: "INDIRECT", c: "lookup", a: ["ref_text", "[a1]"], d: "把文字轉成儲存格參照。", ex: "=INDIRECT(\"B\"&E1)", r: "E1 為 5 時取 B5 的值", t: "常用來跨工作表動態取值：=INDIRECT(A1&\"!B2\")。" },
+  { f: "OFFSET", c: "lookup", a: ["reference", "rows", "cols", "[height]", "[width]"], d: "從起點位移指定列數、欄數後取得範圍。", ex: "=SUM(OFFSET(B1,1,0,5,1))", r: "B2:B6 的總和" },
+
+  // 文字處理
+  { f: "LEFT", c: "text", top: 1, a: ["text", "[num_chars]"], d: "從左邊取出指定字數。", ex: "=LEFT(\"TW-1024\",2)", r: "TW" },
+  { f: "RIGHT", c: "text", top: 1, a: ["text", "[num_chars]"], d: "從右邊取出指定字數。", ex: "=RIGHT(\"TW-1024\",4)", r: "1024", t: "取出的是文字，要計算可用 VALUE 或 --RIGHT(…)。" },
+  { f: "MID", c: "text", top: 1, a: ["text", "start_num", "num_chars"], d: "從指定位置取出指定字數。", ex: "=MID(\"A123456789\",2,1)", r: "1（身分證字號的性別碼）" },
+  { f: "LEN", c: "text", top: 1, a: ["text"], d: "計算字數（中英文都算 1 個字）。", ex: "=LEN(\"台北市\")", r: "3", t: "LENB 會把中文算 2 個位元組。" },
+  { f: "FIND", c: "text", a: ["find_text", "within_text", "[start_num]"], d: "找出字元的位置（區分大小寫）。", ex: "=FIND(\"-\",\"TW-1024\")", r: "3", t: "SEARCH 不分大小寫，且可用萬用字元。" },
+  { f: "SUBSTITUTE", c: "text", a: ["text", "old_text", "new_text", "[instance_num]"], d: "把指定文字換成新文字。", ex: "=SUBSTITUTE(\"0912-345-678\",\"-\",\"\")", r: "0912345678" },
+  { f: "TRIM", c: "text", top: 1, a: ["text"], d: "移除前後空白，字中間的連續空白留一個。", ex: "=TRIM(\"  王小明  \")", r: "王小明", t: "全形空白不會被移除，可先用 SUBSTITUTE 換掉。" },
+  { f: "UPPER", c: "text", a: ["text"], d: "英文字母轉大寫。LOWER 轉小寫，PROPER 每個字首大寫。", ex: "=UPPER(\"excel\")", r: "EXCEL" },
+  { f: "TEXT", c: "text", top: 1, a: ["value", "format_text"], d: "把數字或日期轉成指定格式的文字。", ex: "=TEXT(A2,\"yyyy/mm/dd\")", r: "2026/10/25", t: "\"#,##0\" 千分位、\"0.0%\" 百分比、\"aaaa\" 顯示星期幾。" },
+  { f: "TEXTJOIN", c: "text", v: "2019", a: ["delimiter", "ignore_empty", "text1", "…"], d: "用分隔符號把多個文字串起來。", ex: "=TEXTJOIN(\"、\",TRUE,A2:A5)", r: "A2:A5 用頓號串成一句", t: "簡單串接也可以用 & 或 CONCAT。" },
+  { f: "CONCAT", c: "text", v: "2019", a: ["text1", "[text2]", "…"], d: "把文字串接起來（取代舊的 CONCATENATE）。", ex: "=CONCAT(B2,\"先生\")", r: "王先生", t: "等同 =B2&\"先生\"。" },
+  { f: "VALUE", c: "text", a: ["text"], d: "把看起來像數字的文字轉成數字。", ex: "=VALUE(\"1,024\")", r: "1024" },
+  { f: "TEXTSPLIT", c: "text", v: "365", a: ["text", "col_delimiter", "[row_delimiter]", "…"], d: "依分隔符號把文字拆到多個儲存格。", ex: "=TEXTSPLIT(\"北區,南區,中區\",\",\")", r: "拆成三格：北區｜南區｜中區" },
+
+  // 日期與時間
+  { f: "TODAY", c: "date", top: 1, a: [], d: "傳回今天日期，每次開檔自動更新。", ex: "=TODAY()", r: "今天的日期", t: "要固定日期不變，改用 Ctrl+;。" },
+  { f: "NOW", c: "date", a: [], d: "傳回目前日期與時間。", ex: "=NOW()", r: "現在的日期時間" },
+  { f: "DATE", c: "date", top: 1, a: ["year", "month", "day"], d: "用年、月、日組成日期。", ex: "=DATE(2026,10,25)", r: "2026/10/25", t: "民國年記得加 1911。" },
+  { f: "YEAR", c: "date", top: 1, a: ["serial_number"], d: "取出年份。MONTH 取月、DAY 取日。", ex: "=YEAR(\"2026/10/25\")", r: "2026" },
+  { f: "DATEDIF", c: "date", top: 1, a: ["start_date", "end_date", "unit"], d: "計算兩個日期相差幾年、幾月或幾天。", ex: "=DATEDIF(B2,TODAY(),\"y\")", r: "到今天的滿幾歲 / 年資", t: "unit：\"y\" 年、\"m\" 月、\"d\" 天。輸入時不會出現提示，要自己打完整。" },
+  { f: "EDATE", c: "date", a: ["start_date", "months"], d: "傳回幾個月之前或之後的日期。", ex: "=EDATE(\"2026/1/31\",1)", r: "2026/2/28", t: "結果是序號，記得把儲存格設為日期格式。" },
+  { f: "EOMONTH", c: "date", top: 1, a: ["start_date", "months"], d: "傳回幾個月後的月底日期。", ex: "=EOMONTH(\"2026/2/10\",0)", r: "2026/2/28", t: "算當月天數：=DAY(EOMONTH(A2,0))。" },
+  { f: "WEEKDAY", c: "date", a: ["serial_number", "[return_type]"], d: "傳回星期幾的數字。", ex: "=WEEKDAY(\"2026/10/25\",2)", r: "7（星期日）", t: "預設星期日 = 1；return_type 填 2 改成星期一 = 1。" },
+  { f: "NETWORKDAYS", c: "date", a: ["start_date", "end_date", "[holidays]"], d: "計算兩日期之間的工作天數（扣除週末與假日）。", ex: "=NETWORKDAYS(\"2026/10/1\",\"2026/10/31\")", r: "22", t: "假日清單放在一個範圍，當作第 3 個引數。" },
+  { f: "WORKDAY", c: "date", a: ["start_date", "days", "[holidays]"], d: "傳回幾個工作天後的日期。", ex: "=WORKDAY(\"2026/10/23\",3)", r: "2026/10/28" },
+
+  // 動態陣列
+  { f: "FILTER", c: "array", top: 1, v: "2021", a: ["array", "include", "[if_empty]"], d: "依條件篩出符合的資料，結果自動溢出到下方。", ex: "=FILTER(A2:E9,E2:E9>30000,\"無\")", r: "所有金額大於 30000 的列", t: "多條件：(條件1)*(條件2) 代表且，(條件1)+(條件2) 代表或。" },
+  { f: "SORT", c: "array", v: "2021", a: ["array", "[sort_index]", "[sort_order]", "[by_col]"], d: "排序範圍並輸出結果。", ex: "=SORT(A2:E9,5,-1)", r: "依第 5 欄由大到小排序", t: "SORTBY 可依其他範圍排序。" },
+  { f: "UNIQUE", c: "array", top: 1, v: "2021", a: ["array", "[by_col]", "[exactly_once]"], d: "取出不重複的值。", ex: "=UNIQUE(C2:C9)", r: "不重複的區域清單" },
+  { f: "SEQUENCE", c: "array", v: "2021", a: ["rows", "[columns]", "[start]", "[step]"], d: "產生一串連續數字。", ex: "=SEQUENCE(5)", r: "1、2、3、4、5（往下五格）" },
+  { f: "LET", c: "array", v: "2021", a: ["name1", "value1", "calculation"], d: "在公式裡替中間結果取名字，讓長公式更好讀。", ex: "=LET(x,A2*1.05,ROUND(x,0))", r: "A2 加 5% 後四捨五入" }
+];
+
+</script>
+<script>
+// 函數測驗：練習用資料表與題目（範例資料）
+// fx: 題目中的公式；hl: 要在表格上標色的範圍；o: 選項（第一個是正確答案，出題時會打亂）；code: 選項是公式
+window.QUIZ_SHEET = [
+  ["日期", "業務", "區域", "產品", "金額"],
+  ["2026/1/5", "王小明", "北區", "筆電", 32000],
+  ["2026/1/8", "陳美玲", "南區", "螢幕", 8500],
+  ["2026/1/12", "王小明", "北區", "滑鼠", 650],
+  ["2026/2/3", "林志豪", "中區", "筆電", 30500],
+  ["2026/2/14", "陳美玲", "南區", "筆電", 31000],
+  ["2026/2/20", "林志豪", "中區", "螢幕", 9200],
+  ["2026/3/2", "王小明", "北區", "螢幕", 8800],
+  ["2026/3/15", "陳美玲", "南區", "滑鼠", 720]
+];
+
+window.QUIZ = [
+  { q: "要算出 E 欄全部金額的總和，應該輸入哪個公式？", hl: ["E2:E9"], code: 1,
+    o: ["=SUM(E2:E9)", "=COUNT(E2:E9)", "=SUM(E2,E9)", "=ADD(E2:E9)"],
+    why: "冒號表示「到」，E2:E9 是整段範圍；逗號只會加 E2 和 E9 兩格。COUNT 是算個數，Excel 也沒有 ADD 函數。總和是 121370。" },
+  { q: "要算出「王小明」的業績總和，應該輸入？", hl: ["B2:B9", "E2:E9"], code: 1,
+    o: ["=SUMIF(B2:B9,\"王小明\",E2:E9)", "=SUMIF(E2:E9,\"王小明\",B2:B9)", "=COUNTIF(B2:B9,\"王小明\")", "=SUM(B2:B9=\"王小明\")"],
+    why: "SUMIF 的順序是（條件範圍, 條件, 加總範圍）。王小明有 32000、650、8800 三筆，合計 41450。" },
+  { q: "這個公式會傳回什麼？", fx: "=COUNTIF(D2:D9,\"筆電\")", hl: ["D2:D9"],
+    o: ["3", "2", "93500", "8"],
+    why: "D2、D5、D6 是筆電，共 3 筆。93500 是筆電的金額總和，那要用 SUMIF。" },
+  { q: "要加總「南區」而且產品是「筆電」的金額，應該輸入？", hl: ["E2:E9", "C2:C9", "D2:D9"], code: 1,
+    o: ["=SUMIFS(E2:E9,C2:C9,\"南區\",D2:D9,\"筆電\")", "=SUMIF(C2:C9,\"南區\",E2:E9)", "=SUMIFS(C2:C9,\"南區\",D2:D9,\"筆電\",E2:E9)", "=SUMIFS(\"南區\",\"筆電\",E2:E9)"],
+    why: "SUMIFS 的加總範圍放在第一個，後面一組一組放（條件範圍, 條件）。答案是 31000。SUMIF 只能放一個條件，會把南區全部加起來得到 40220。" },
+  { q: "這個公式會傳回什麼？", fx: "=LARGE(E2:E9,2)", hl: ["E2:E9"],
+    o: ["31000", "30500", "32000", "720"],
+    why: "LARGE 取第 k 大，第 1 大是 32000，第 2 大是 31000。720 是第 2 小，要用 SMALL。" },
+  { q: "這個公式會傳回什麼？", fx: "=VLOOKUP(\"林志豪\",B2:E9,4,FALSE)", hl: ["B2:E9"],
+    o: ["30500", "9200", "筆電", "#N/A"],
+    why: "範圍從 B 欄開始數，第 4 欄是 E 欄。VLOOKUP 找到第一筆林志豪（第 5 列）就停，所以是 30500，不會找到第 7 列的 9200。" },
+  { q: "VLOOKUP 最後一個引數填 FALSE，代表什麼意思？", fx: "=VLOOKUP(G2,B2:E9,4,FALSE)", hl: ["B2:E9"],
+    o: ["完全符合才傳回", "找最接近的值（大約符合）", "不區分大小寫", "從最後一筆往回找"],
+    why: "FALSE（或 0）是完全符合。填 TRUE 或省略是大約符合，資料必須先排序，否則很容易查到錯的值。" },
+  { q: "要用 XLOOKUP 查出「陳美玲」第一筆的金額，應該輸入？", hl: ["B2:B9", "E2:E9"], code: 1,
+    o: ["=XLOOKUP(\"陳美玲\",B2:B9,E2:E9)", "=XLOOKUP(B2:B9,\"陳美玲\",E2:E9)", "=XLOOKUP(\"陳美玲\",E2:E9,B2:B9)", "=XLOOKUP(\"陳美玲\",B2:E9,4)"],
+    why: "XLOOKUP 的順序是（找什麼, 去哪裡找, 傳回哪一欄），不用數第幾欄。結果是 8500。" },
+  { q: "這個公式會傳回什麼？", fx: "=INDEX(E2:E9,MATCH(\"中區\",C2:C9,0))", hl: ["E2:E9", "C2:C9"],
+    o: ["30500", "9200", "4", "#N/A"],
+    why: "MATCH 找到「中區」在 C2:C9 的第 4 個位置，INDEX 再取 E2:E9 的第 4 個，也就是 E5 = 30500。" },
+  { q: "想在 F2 標出金額 ≥ 10000 的「大單」，其他顯示「小單」，應該輸入？", hl: ["E2"], code: 1,
+    o: ["=IF(E2>=10000,\"大單\",\"小單\")", "=IF(\"大單\",E2>=10000,\"小單\")", "=IF(E2>=10000,大單,小單)", "=IF(E2=>10000,\"大單\",\"小單\")"],
+    why: "IF 的順序是（條件, 成立時, 不成立時）。文字一定要加雙引號，否則會出現 #NAME?；「大於等於」要寫成 >=。" },
+  { q: "這個公式會傳回什麼？", fx: "=IFERROR(VLOOKUP(\"張大同\",B2:E9,4,FALSE),\"查無資料\")", hl: ["B2:E9"],
+    o: ["查無資料", "#N/A", "0", "張大同"],
+    why: "名單裡沒有張大同，VLOOKUP 會傳回 #N/A，IFERROR 把錯誤換成「查無資料」。" },
+  { q: "這個公式會傳回什麼？", fx: "=COUNT(B2:B9)", hl: ["B2:B9"],
+    o: ["0", "8", "3", "#VALUE!"],
+    why: "COUNT 只計算數字，B 欄全部是文字，所以是 0。要算有填資料的格數要用 COUNTA，結果是 8。" },
+  { q: "這個公式會傳回什麼？", fx: "=COUNTIFS(C2:C9,\"北區\",E2:E9,\">5000\")", hl: ["C2:C9", "E2:E9"],
+    o: ["2", "3", "1", "40800"],
+    why: "北區有 32000、650、8800 三筆，其中大於 5000 的有兩筆。條件裡的比較符號要和數字一起放在雙引號裡。" },
+  { q: "這個公式會傳回什麼？", fx: "=AVERAGEIF(B2:B9,\"陳美玲\",E2:E9)", hl: ["B2:B9", "E2:E9"],
+    o: ["13406.67", "40220", "10055", "3"],
+    why: "陳美玲有 8500、31000、720 三筆，總和 40220，除以 3 約為 13406.67。" },
+  { q: "這個公式會傳回什麼？", fx: "=RANK.EQ(E5,$E$2:$E$9)", hl: ["E5", "E2:E9"],
+    o: ["3", "4", "6", "1"],
+    why: "預設由大到小排名：32000、31000、30500，所以 E5 是第 3 名。第 3 個引數填 1 才是由小到大，那會是第 6 名。" },
+  { q: "這個公式會傳回什麼？", fx: "=MID(\"NB-2026-TW\",4,4)",
+    o: ["2026", "-202", "026-", "B-20"],
+    why: "MID 從第 4 個字開始取 4 個字：N、B、- 之後就是 2026。" },
+  { q: "這個公式會傳回什麼？", fx: "=LEN(TRIM(\"  王小明  \"))",
+    o: ["3", "7", "5", "9"],
+    why: "TRIM 先移除前後的空白，剩下「王小明」三個字。沒有 TRIM 的話會是 7。" },
+  { q: "這個公式會傳回什麼？", fx: "=TEXTJOIN(\"-\",TRUE,B2:D2)", hl: ["B2:D2"],
+    o: ["王小明-北區-筆電", "王小明北區筆電", "-王小明-北區-筆電-", "王小明,北區,筆電"],
+    why: "TEXTJOIN 用第一個引數當分隔符號，只放在值與值之間，頭尾不會加。" },
+  { q: "這個公式會傳回什麼？", fx: "=EOMONTH(A2,0)", hl: ["A2"],
+    o: ["2026/1/31", "2026/2/5", "2026/1/5", "2026/2/28"],
+    why: "EOMONTH 傳回月底日期，第二個引數 0 代表同一個月。填 1 才是下個月底 2026/2/28。" },
+  { q: "這個公式會傳回什麼？", fx: "=DATEDIF(A2,A9,\"m\")", hl: ["A2", "A9"],
+    o: ["2", "3", "69", "1"],
+    why: "2026/1/5 到 2026/3/15 滿 2 個月（要到 4/5 才滿 3 個月）。單位改成 \"d\" 才是相差 69 天。" },
+  { q: "2026/10/25 是星期日。這個公式會傳回什麼？", fx: "=WEEKDAY(DATE(2026,10,25))",
+    o: ["1", "7", "0", "6"],
+    why: "WEEKDAY 預設星期日 = 1、星期六 = 7。寫成 WEEKDAY(…,2) 才會改成星期一 = 1、星期日 = 7。" },
+  { q: "F2 輸入 =E2/$E$10（E10 放總計），往下複製到 F3 會變成？", hl: ["E2"], code: 1,
+    o: ["=E3/$E$10", "=E3/$E$11", "=E2/$E$10", "=F3/$E$10"],
+    why: "沒有 $ 的 E2 會跟著往下移一列變成 E3；加了 $ 的 $E$10 被鎖住不動。編輯公式時按 F4 可以快速加上 $。" },
+  { q: "這個公式會傳回什麼？", fx: "=ROUND(1234.567,-2)",
+    o: ["1200", "1234.57", "1235", "1230"],
+    why: "位數 -2 代表四捨五入到百位。1234.57 是位數填 2，1230 是填 -1。" },
+  { q: "這個公式會傳回什麼？", fx: "=SUMPRODUCT((D2:D9=\"螢幕\")*E2:E9)", hl: ["D2:D9", "E2:E9"],
+    o: ["26500", "3", "9200", "8800"],
+    why: "(D2:D9=\"螢幕\") 會變成 TRUE/FALSE，乘上金額後只留下螢幕：8500 + 9200 + 8800 = 26500。" },
+  { q: "=UNIQUE(C2:C9) 會列出幾個值？", fx: "=UNIQUE(C2:C9)", hl: ["C2:C9"],
+    o: ["3", "8", "1", "5"],
+    why: "C 欄只有北區、南區、中區三種，UNIQUE 依出現順序各列一次。" },
+  { q: "要列出所有金額大於 30000 的完整資料，應該輸入？", hl: ["A2:E9", "E2:E9"], code: 1,
+    o: ["=FILTER(A2:E9,E2:E9>30000)", "=FILTER(E2:E9>30000,A2:E9)", "=SORT(A2:E9,E2:E9>30000)", "=VLOOKUP(\">30000\",A2:E9,5,FALSE)"],
+    why: "FILTER 的順序是（要傳回的範圍, 條件）。會傳回第 2、5、6 列三筆，自動溢出到下方。需要 Excel 2021 或 Microsoft 365。" },
+  { q: "這個公式會傳回什麼？", fx: "=TEXT(0.256,\"0.0%\")",
+    o: ["25.6%", "0.3%", "26%", "0.256%"],
+    why: "百分比格式會先乘以 100，0.0 表示留一位小數，所以是 25.6%。注意 TEXT 的結果是文字。" },
+  { q: "這個公式會傳回什麼？", fx: "=INT(-3.7)",
+    o: ["-4", "-3", "3", "-3.7"],
+    why: "INT 取「不大於」原數的整數，負數會往更小的方向走，所以是 -4。只想去掉小數要用 TRUNC，結果是 -3。" },
+  { q: "這個公式會傳回什麼？", fx: "=MOD(17,5)",
+    o: ["2", "3", "3.4", "12"],
+    why: "17 ÷ 5 = 3 餘 2，MOD 傳回餘數 2。" },
+  { q: "想在 F2 顯示「王小明（北區）」，應該輸入？", hl: ["B2", "C2"], code: 1,
+    o: ["=B2&\"（\"&C2&\"）\"", "=B2+\"（\"+C2+\"）\"", "=B2&（C2）", "=CONCAT(B2:C2,\"（）\")"],
+    why: "& 是串接文字的符號，固定文字要加雙引號。用 + 會得到 #VALUE!，因為 + 只能算數字。" }
+];
+
+</script>
+<script>
+// 共用工具、分頁切換、快捷鍵速查
+(function () {
+  const XL = (window.XL = {});
+  const $ = (s) => document.querySelector(s);
+  XL.$ = $;
+  // 手機、平板等觸控裝置（通常沒有實體鍵盤）
+  XL.touch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
+  XL.store = {
+    get(k, d) { try { const v = localStorage.getItem("xl." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("xl." + k, JSON.stringify(v)); } catch (e) { /* 無法儲存時略過 */ } }
+  };
+  XL.esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  XL.shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  // ---------- 按鍵顯示與比對 ----------
+  const LABEL = { Up: "↑", Down: "↓", Left: "←", Right: "→", PageUp: "PgUp", PageDown: "PgDn", Delete: "Del", Escape: "Esc" };
+  const MOD_ORDER = ["Ctrl", "Shift", "Alt"];
+  XL.isSeq = (k) => k.includes(",");
+  XL.cap = (k) => '<span class="kbd">' + XL.esc(LABEL[k] || k) + "</span>";
+  XL.parts = (k) => k.split("+");
+  XL.renderKeys = function (k, extra) {
+    let html;
+    if (XL.isSeq(k)) html = k.split(",").map(XL.cap).join('<span class="then">→</span>');
+    else html = XL.parts(k).map(XL.cap).join('<span class="sep">+</span>');
+    return '<span class="keys' + (extra ? " " + extra : "") + '">' + html + "</span>";
+  };
+  XL.canon = function (k) {
+    if (XL.isSeq(k)) return k;
+    const p = XL.parts(k);
+    const key = p.pop();
+    const mods = MOD_ORDER.filter((m) => p.includes(m));
+    return mods.concat(key).join("+");
+  };
+
+  const CODE = {
+    Semicolon: ";", Quote: "'", Equal: "=", Minus: "-", Backquote: "`", BracketLeft: "[", BracketRight: "]",
+    Comma: ",", Period: ".", Slash: "/", Backslash: "\\", Space: "Space", Enter: "Enter", NumpadEnter: "Enter",
+    Tab: "Tab", Escape: "Esc", Delete: "Delete", Backspace: "Backspace", Home: "Home", End: "End",
+    PageUp: "PageUp", PageDown: "PageDown", ArrowUp: "Up", ArrowDown: "Down", ArrowLeft: "Left", ArrowRight: "Right",
+    Insert: "Insert", NumpadSubtract: "-"
+  };
+  // 把 keydown 事件轉成 "Ctrl+Shift+L" 這種格式；只按修飾鍵時回傳 null
+  XL.comboFromEvent = function (e) {
+    if (["Control", "Shift", "Alt", "Meta", "AltGraph", "CapsLock"].includes(e.key)) return null;
+    const c = e.code || "";
+    let key = null, shift = e.shiftKey;
+    if (/^Key[A-Z]$/.test(c)) key = c.slice(3);
+    else if (/^Digit\d$/.test(c)) key = c.slice(5);
+    else if (/^Numpad\d$/.test(c)) key = c.slice(6);
+    else if (/^F\d{1,2}$/.test(c)) key = c;
+    else if (c === "NumpadAdd") { key = "="; shift = true; }
+    else if (CODE[c]) key = CODE[c];
+    else if (e.key && e.key.length === 1) key = e.key.toUpperCase();
+    if (!key) return null;
+    const mods = [];
+    if (e.ctrlKey) mods.push("Ctrl");
+    if (shift) mods.push("Shift");
+    if (e.altKey) mods.push("Alt");
+    return mods.concat(key).join("+");
+  };
+  XL.modsFromEvent = (e) => [e.ctrlKey && "Ctrl", e.shiftKey && "Shift", e.altKey && "Alt"].filter(Boolean);
+
+  // 同一功能的其他按法
+  XL.EQUIV = { "Ctrl+G": ["F5"], "Ctrl+F2": ["Ctrl+P"], "Ctrl+P": ["Ctrl+F2"] };
+  XL.byCanon = {};
+  SHORTCUTS.forEach((s, i) => {
+    s.id = i;
+    const c = XL.canon(s.k);
+    (XL.byCanon[c] = XL.byCanon[c] || []).push(s);
+  });
+  XL.catName = (list, id) => (list.find((c) => c.id === id) || {}).name || "";
+
+  // 練習紀錄：{ id: { ok, bad, streak } }
+  XL.progress = XL.store.get("kp", {});
+  XL.level = function (id) {
+    const p = XL.progress[id];
+    if (!p) return 0;
+    if (p.streak >= 2) return 2;
+    return p.ok > 0 ? 1 : 0;
+  };
+  XL.saveProgress = () => XL.store.set("kp", XL.progress);
+
+  // ---------- 分頁 ----------
+  const VIEWS = ["keys", "drill", "func", "quiz"];
+  const FBAR = {
+    keys: ["A1", '=查詢(<span class="r1">快捷鍵</span>, "Windows")'],
+    drill: ["B2", '=實戰(<span class="r2">按下快捷鍵</span>)'],
+    func: ["C3", '=查詢(<span class="r3">函數</span>, "語法+範例")'],
+    quiz: ["D4", '=測驗(<span class="r1">A1:E9</span>)']
+  };
+  XL.onShow = {};
+  XL.show = function (v, focus) {
+    if (!VIEWS.includes(v)) v = "keys";
+    VIEWS.forEach((x) => {
+      $("#view-" + x).hidden = x !== v;
+      $("#tab-" + x).setAttribute("aria-selected", x === v ? "true" : "false");
+    });
+    $("#nameBox").textContent = FBAR[v][0];
+    $("#fbarText").innerHTML = FBAR[v][1];
+    XL.current = v;
+    XL.store.set("tab", v);
+    if (XL.onShow[v]) XL.onShow[v](focus);
+  };
+  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => XL.show(b.dataset.view, true)));
+
+  // ---------- 快捷鍵速查 ----------
+  const ks = { cat: "all", q: "", top: false };
+  function keyMatches(s) {
+    if (ks.top && !s.top) return false;
+    if (ks.cat !== "all" && s.c !== ks.cat) return false;
+    if (!ks.q) return true;
+    const hay = (s.k + " " + s.d + " " + (s.n || "") + " " + (s.a || "")).toLowerCase().replace(/\s+/g, "");
+    return hay.includes(ks.q);
+  }
+  function renderKeyCats() {
+    const base = SHORTCUTS.filter((s) => !ks.top || s.top);
+    const chips = [{ id: "all", name: "全部", n: base.length }].concat(
+      KEY_CATS.map((c) => ({ id: c.id, name: c.name, n: base.filter((s) => s.c === c.id).length }))
+    );
+    $("#keyCats").innerHTML = chips.map((c) =>
+      '<button class="chip' + (ks.cat === c.id ? " on" : "") + '" type="button" data-cat="' + c.id + '">' +
+      XL.esc(c.name) + '<span class="n">' + c.n + "</span></button>").join("");
+  }
+  XL.renderKeyList = function () {
+    renderKeyCats();
+    let list = SHORTCUTS.filter(keyMatches);
+    // 搜尋 "ctrl+d" 這類完整按鍵時，只列出完全相同的那組
+    if (ks.q.includes("+")) {
+      const qc = XL.canon(ks.q.split("+").map((p) => (p.length === 1 ? p.toUpperCase() : p.charAt(0).toUpperCase() + p.slice(1))).join("+"));
+      const exact = list.filter((s) => XL.canon(s.k) === qc);
+      if (exact.length) list = exact;
+    }
+    if (!list.length) {
+      $("#keyList").innerHTML = '<div class="empty">找不到符合的快捷鍵，換個關鍵字試試，例如「篩選」或「Ctrl+D」。</div>';
+      return;
+    }
+    const html = KEY_CATS.map((cat) => {
+      const rows = list.filter((s) => s.c === cat.id);
+      if (!rows.length) return "";
+      return '<div class="group"><div class="group-head"><h2>' + XL.esc(cat.name) + "</h2>" +
+        '<button class="btn small" type="button" data-drill="' + cat.id + '">練這組</button></div>' +
+        rows.map((s) => {
+          const lv = XL.level(s.id);
+          const note = [s.a ? "也就是 " + s.a : "", s.n || "", s.ime ? "使用注音輸入法時可能被攔下，請先切換成英文" : ""].filter(Boolean).join("；");
+          return '<div class="krow">' + XL.renderKeys(s.k) +
+            '<div class="desc">' + XL.esc(s.d) + (s.top ? ' <span class="badge top">最常用</span>' : "") +
+            (note ? '<span class="note">' + XL.esc(note) + "</span>" : "") + "</div>" +
+            '<span class="dot lv' + lv + '" title="' + ["還沒練過", "練過", "已熟練"][lv] + '"></span></div>';
+        }).join("") + "</div>";
+    }).join("");
+    $("#keyList").innerHTML = html;
+  };
+  $("#keyCats").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-cat]");
+    if (!b) return;
+    ks.cat = b.dataset.cat;
+    XL.renderKeyList();
+  });
+  $("#keyList").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-drill]");
+    if (!b) return;
+    if (XL.setDrillCat) XL.setDrillCat(b.dataset.drill);
+    XL.show("drill", true);
+  });
+  $("#keySearch").addEventListener("input", (e) => { ks.q = e.target.value.toLowerCase().replace(/\s+/g, ""); XL.renderKeyList(); });
+  $("#keyTopOnly").addEventListener("change", (e) => { ks.top = e.target.checked; XL.renderKeyList(); });
+
+  // 按按看
+  const lookup = $("#lookup"), out = $("#lookupOut");
+  const lookupIdle = out.innerHTML;
+  if (XL.touch) lookup.hidden = true;
+  lookup.addEventListener("keydown", (e) => {
+    if (e.key === "Tab" && !e.ctrlKey && !e.altKey) return;
+    if (e.key === "Escape") { lookup.blur(); return; }
+    if (e.key === "Process" || e.isComposing) {
+      e.preventDefault();
+      out.innerHTML = "<strong>偵測到中文輸入法。</strong>請先切換成英文輸入（按一下 Shift），再按組合鍵。";
+      return;
+    }
+    const combo = XL.comboFromEvent(e);
+    if (!combo) return;
+    e.preventDefault();
+    const hits = XL.byCanon[XL.canon(combo)] || [];
+    if (hits.length) {
+      out.innerHTML = XL.renderKeys(combo) + "<strong>" + hits.map((h) => XL.esc(h.d)).join("；") + "</strong>";
+    } else {
+      out.innerHTML = XL.renderKeys(combo) + "<span>這組不在常用清單裡。</span>";
+    }
+  });
+  lookup.addEventListener("blur", () => { setTimeout(() => { if (document.activeElement !== lookup) out.innerHTML = lookupIdle; }, 4000); });
+
+  XL.onShow.keys = () => XL.renderKeyList();
+
+  // 啟動時先畫好速查頁，其他頁由各自的檔案初始化後再切換
+  XL.boot = function () {
+    const hash = (location.hash || "").slice(1);
+    XL.show(VIEWS.includes(hash) ? hash : XL.store.get("tab", "keys"), false);
+  };
+})();
+
+</script>
+<script>
+// 快捷鍵實戰
+(function () {
+  const { $, esc, shuffle } = XL;
+  const d = { cat: "all", mode: XL.store.get("mode", XL.touch ? "choice" : "keys"), weak: true, item: null, opts: [], answered: false, tried: false,
+    firsts: 0, correct: 0, streak: 0, lastId: null, timer: null, showingMods: false };
+  const cap = $("#capture"), capKeys = $("#captureKeys"), capHint = $("#captureHint");
+  const fb = $("#drillFeedback"), choicesEl = $("#drillChoices");
+  const HINT_ON = "直接在鍵盤上按下快捷鍵（按 Esc 離開作答區）";
+  const HINT_OFF = XL.touch ? "手機要接實體鍵盤才能用按鍵作答，沒有鍵盤請切換成「選擇題」" : "點這裡，開始用鍵盤作答";
+
+  const pool = () => SHORTCUTS.filter((s) => d.cat === "all" || s.c === d.cat);
+  const choiceOnly = (s) => d.mode === "choice" || s.r || XL.isSeq(s.k);
+  const matches = (combo, s) => {
+    const want = XL.canon(s.k), got = XL.canon(combo);
+    return got === want || (XL.EQUIV[want] || []).includes(got);
+  };
+
+  function pick() {
+    const list = pool().filter((s) => s.id !== d.lastId);
+    if (!list.length) return pool()[0];
+    const w = list.map((s) => {
+      if (!d.weak) return 1;
+      const p = XL.progress[s.id] || { ok: 0, bad: 0, streak: 0 };
+      return Math.max(0.25, 1 + p.bad * 1.5 - p.streak * 0.5);
+    });
+    let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < list.length; i++) { r -= w[i]; if (r <= 0) return list[i]; }
+    return list[list.length - 1];
+  }
+
+  function distractors(s) {
+    const used = new Set([XL.canon(s.k)]);
+    const same = shuffle(SHORTCUTS.filter((x) => x.c === s.c));
+    const rest = shuffle(SHORTCUTS);
+    const out = [];
+    for (const x of same.concat(rest)) {
+      const c = XL.canon(x.k);
+      if (used.has(c)) continue;
+      used.add(c); out.push(x);
+      if (out.length === 3) break;
+    }
+    return out;
+  }
+
+  function next() {
+    clearTimeout(d.timer);
+    const s = pick();
+    d.item = s; d.lastId = s.id; d.answered = false; d.tried = false;
+    $("#drillTag").textContent = XL.catName(KEY_CATS, s.c);
+    const lv = XL.level(s.id);
+    let info = ["新題目", "練過", "已熟練"][lv];
+    if (d.mode === "keys" && s.r) info += " · 瀏覽器會攔截這組，改用選擇題";
+    else if (d.mode === "keys" && XL.isSeq(s.k)) info += " · 功能區按鍵要依序按，改用選擇題";
+    $("#drillInfo").textContent = info;
+    $("#drillPrompt").textContent = s.d;
+    fb.className = "feedback"; fb.innerHTML = "";
+    cap.classList.remove("ok", "bad");
+    capKeys.innerHTML = "";
+    if (choiceOnly(s)) {
+      cap.hidden = true;
+      choicesEl.hidden = false;
+      d.opts = shuffle([s].concat(distractors(s)));
+      choicesEl.innerHTML = d.opts.map((o, i) =>
+        '<button class="choice" type="button" data-i="' + i + '"><span class="letter">' + (i + 1) + '</span><span class="body">' +
+        XL.renderKeys(o.k) + "</span></button>").join("");
+    } else {
+      cap.hidden = false;
+      choicesEl.hidden = true;
+      capHint.textContent = document.activeElement === cap ? HINT_ON : HINT_OFF;
+      if (XL.current === "drill" && !XL.touch) cap.focus({ preventScroll: true });
+    }
+  }
+
+  function record(ok) {
+    if (d.tried) return;
+    d.tried = true;
+    d.firsts++;
+    const p = XL.progress[d.item.id] || { ok: 0, bad: 0, streak: 0 };
+    if (ok) { p.ok++; p.streak++; d.correct++; d.streak++; }
+    else { p.bad++; p.streak = 0; d.streak = 0; }
+    XL.progress[d.item.id] = p;
+    XL.saveProgress();
+    side();
+  }
+
+  function whatIs(combo) {
+    const hits = XL.byCanon[XL.canon(combo)];
+    return hits ? "在 Excel 是「" + hits.map((h) => h.d).join("；") + "」" : "這組不在常用清單裡";
+  }
+
+  function correct(retried) {
+    d.answered = true;
+    cap.classList.remove("bad"); cap.classList.add("ok");
+    const s = d.item;
+    const alt = (XL.EQUIV[XL.canon(s.k)] || []).map((k) => XL.renderKeys(k)).join(" ");
+    fb.className = "feedback ok";
+    fb.innerHTML = (retried ? "答對了！這題之後會多出現幾次。" : "答對了！") +
+      (alt ? '<span class="why">也可以按 ' + alt + "</span>" : "") +
+      (s.n ? '<span class="why">' + esc(s.n) + "</span>" : "");
+    d.timer = setTimeout(next, s.n || alt ? 2200 : 1100);
+  }
+
+  // 實際按鍵作答
+  document.addEventListener("keydown", (e) => {
+    if (XL.current !== "drill" || !d.item) return;
+    if (choiceOnly(d.item)) {
+      const t = e.target.tagName;
+      if (d.answered || t === "INPUT" || t === "SELECT" || e.ctrlKey || e.altKey) return;
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= d.opts.length) { e.preventDefault(); choose(n - 1); }
+      return;
+    }
+    if (document.activeElement !== cap) return;
+    if (e.key === "Escape" && !e.ctrlKey && !e.shiftKey && !e.altKey) { cap.blur(); return; }
+    if (e.key === "Process" || e.isComposing) {
+      e.preventDefault();
+      fb.className = "feedback bad";
+      fb.innerHTML = "偵測到中文輸入法。<span class=\"why\">請先切換成英文輸入（按一下 Shift，或按 Ctrl+Space / Win+Space），再按快捷鍵。</span>";
+      return;
+    }
+    const combo = XL.comboFromEvent(e);
+    e.preventDefault();
+    if (!combo) {
+      const held = XL.modsFromEvent(e);
+      if (!d.answered && held.length) { capKeys.innerHTML = XL.renderKeys(held.join("+") + "+…"); d.showingMods = true; }
+      return;
+    }
+    if (d.answered) return;
+    d.showingMods = false;
+    capKeys.innerHTML = XL.renderKeys(combo);
+    if (matches(combo, d.item)) {
+      const retried = d.tried;
+      record(true);
+      correct(retried);
+    } else {
+      record(false);
+      cap.classList.remove("bad"); void cap.offsetWidth; cap.classList.add("bad");
+      fb.className = "feedback bad";
+      fb.innerHTML = "不對喔，你按的是 " + XL.renderKeys(combo) + '<span class="why">' + esc(whatIs(combo)) + "。再試一次，或按「提示」。</span>";
+    }
+  });
+  document.addEventListener("keyup", (e) => {
+    if (XL.current !== "drill" || !d.showingMods || d.answered) return;
+    if (!e.ctrlKey && !e.shiftKey && !e.altKey) { capKeys.innerHTML = ""; d.showingMods = false; }
+  });
+  cap.addEventListener("click", () => cap.focus());
+  cap.addEventListener("focus", () => { capHint.textContent = HINT_ON; });
+  cap.addEventListener("blur", () => { capHint.textContent = HINT_OFF; });
+
+  // 選擇題作答
+  function choose(i) {
+    if (d.answered) return;
+    const o = d.opts[i], s = d.item;
+    const btns = choicesEl.querySelectorAll(".choice");
+    const ok = XL.canon(o.k) === XL.canon(s.k);
+    record(ok);
+    d.answered = true;
+    btns.forEach((b, j) => {
+      b.disabled = true;
+      if (XL.canon(d.opts[j].k) === XL.canon(s.k)) b.classList.add("correct");
+    });
+    if (ok) {
+      fb.className = "feedback ok";
+      fb.innerHTML = "答對了！" + (s.n ? '<span class="why">' + esc(s.n) + "</span>" : "");
+      d.timer = setTimeout(next, s.n ? 2200 : 1100);
+    } else {
+      btns[i].classList.add("wrong");
+      fb.className = "feedback bad";
+      fb.innerHTML = "答案是 " + XL.renderKeys(s.k) + '<span class="why">你選的 ' + XL.renderKeys(o.k) + " 是「" + esc(o.d) + "」。</span>";
+    }
+  }
+  choicesEl.addEventListener("click", (e) => {
+    const b = e.target.closest(".choice");
+    if (b) choose(+b.dataset.i);
+  });
+
+  $("#drillHint").addEventListener("click", () => {
+    if (!d.item || d.answered) return;
+    const s = d.item;
+    const first = XL.isSeq(s.k) ? s.k.split(",")[0] : XL.parts(s.k)[0];
+    const total = XL.isSeq(s.k) ? s.k.split(",").length : XL.parts(s.k).length;
+    fb.className = "feedback";
+    fb.innerHTML = "提示：從 " + XL.renderKeys(first) + " 開始，共 " + total + " 個鍵。";
+    if (!choiceOnly(s)) cap.focus({ preventScroll: true });
+  });
+  $("#drillReveal").addEventListener("click", () => {
+    if (!d.item || d.answered) return;
+    const s = d.item;
+    record(false);
+    d.answered = true;
+    if (choiceOnly(s)) {
+      choicesEl.querySelectorAll(".choice").forEach((b, j) => {
+        b.disabled = true;
+        if (XL.canon(d.opts[j].k) === XL.canon(s.k)) b.classList.add("correct");
+      });
+    } else {
+      capKeys.innerHTML = XL.renderKeys(s.k);
+    }
+    fb.className = "feedback";
+    fb.innerHTML = "答案是 " + XL.renderKeys(s.k) + (s.a ? "（也就是 " + esc(s.a) + "）" : "") +
+      (s.n ? '<span class="why">' + esc(s.n) + "</span>" : "");
+  });
+  $("#drillNext").addEventListener("click", next);
+
+  // 側欄統計
+  function side() {
+    $("#stCorrect").textContent = d.correct;
+    $("#stStreak").textContent = d.streak;
+    $("#stRate").textContent = d.firsts ? Math.round((d.correct / d.firsts) * 100) + "%" : "–";
+    const total = SHORTCUTS.length;
+    const mastered = SHORTCUTS.filter((s) => XL.level(s.id) === 2).length;
+    $("#masterBar").style.width = (mastered / total) * 100 + "%";
+    $("#masterText").textContent = "已熟練 " + mastered + " / " + total + " 組（連續答對兩次算熟練）";
+    const weak = SHORTCUTS.map((s) => ({ s, p: XL.progress[s.id] }))
+      .filter((x) => x.p && x.p.bad > 0 && x.p.streak < 2)
+      .sort((a, b) => b.p.bad - a.p.bad)
+      .slice(0, 5);
+    $("#weakList").innerHTML = weak.length
+      ? weak.map((x) => '<div class="weak-item">' + XL.renderKeys(x.s.k) + "<span>" + esc(x.s.d) + "</span><small>答錯 " + x.p.bad + " 次</small></div>").join("")
+      : '<p class="capture-hint">目前沒有答錯的題目。</p>';
+  }
+
+  // 重設（按兩次確認）
+  const resetBtn = $("#resetProgress");
+  let resetArmed = null;
+  resetBtn.addEventListener("click", () => {
+    if (!resetArmed) {
+      resetBtn.textContent = "再按一次確認重設";
+      resetArmed = setTimeout(() => { resetArmed = null; resetBtn.textContent = "重設練習紀錄"; }, 3000);
+      return;
+    }
+    clearTimeout(resetArmed); resetArmed = null;
+    XL.progress = {}; XL.saveProgress();
+    d.correct = d.firsts = d.streak = 0;
+    resetBtn.textContent = "已重設";
+    setTimeout(() => { resetBtn.textContent = "重設練習紀錄"; }, 1500);
+    side();
+  });
+
+  // 範圍與模式
+  const sel = $("#drillCat");
+  sel.innerHTML = '<option value="all">全部（' + SHORTCUTS.length + "）</option>" +
+    KEY_CATS.map((c) => '<option value="' + c.id + '">' + esc(c.name) + "（" + SHORTCUTS.filter((s) => s.c === c.id).length + "）</option>").join("");
+  sel.addEventListener("change", () => { d.cat = sel.value; next(); });
+  XL.setDrillCat = (c) => { sel.value = c; d.cat = c; d.item = null; };
+  function setMode(m, save) {
+    d.mode = m;
+    if (save) XL.store.set("mode", m);
+    $("#modeKeys").classList.toggle("on", m === "keys");
+    $("#modeChoice").classList.toggle("on", m === "choice");
+  }
+  $("#modeKeys").addEventListener("click", () => { setMode("keys", true); next(); });
+  $("#modeChoice").addEventListener("click", () => { setMode("choice", true); next(); });
+  $("#drillWeakFirst").addEventListener("change", (e) => { d.weak = e.target.checked; });
+  setMode(d.mode);
+
+  XL.onShow.drill = () => {
+    if (!d.item) next();
+    else if (!choiceOnly(d.item) && !d.answered && !XL.touch) cap.focus({ preventScroll: true });
+    side();
+  };
+})();
+
+</script>
+<script>
+// 函數速查 + 函數測驗
+(function () {
+  const { $, esc, shuffle } = XL;
+
+  // ---------- 函數速查 ----------
+  const fs = { cat: "all", q: "", top: false };
+  const VER = { "2019": "Excel 2019 以上", "2021": "Excel 2021 / 365", "365": "限 Microsoft 365" };
+  function syntax(fn) {
+    const args = fn.a.map((a) => {
+      const opt = a.startsWith("[") || a === "…";
+      return '<span class="' + (opt ? "opt" : "arg") + '">' + esc(a) + "</span>";
+    });
+    return esc(fn.f) + "(" + args.join(", ") + ")";
+  }
+  function funcMatches(fn) {
+    if (fs.top && !fn.top) return false;
+    if (fs.cat !== "all" && fn.c !== fs.cat) return false;
+    if (!fs.q) return true;
+    const hay = (fn.f + " " + fn.d + " " + (fn.t || "") + " " + fn.r + " " + XL.catName(FUNC_CATS, fn.c)).toLowerCase();
+    return hay.includes(fs.q);
+  }
+  function renderFuncs() {
+    const base = FUNCS.filter((f) => !fs.top || f.top);
+    const chips = [{ id: "all", name: "全部", n: base.length }].concat(
+      FUNC_CATS.map((c) => ({ id: c.id, name: c.name, n: base.filter((f) => f.c === c.id).length })));
+    $("#funcCats").innerHTML = chips.map((c) =>
+      '<button class="chip' + (fs.cat === c.id ? " on" : "") + '" type="button" data-cat="' + c.id + '">' +
+      esc(c.name) + '<span class="n">' + c.n + "</span></button>").join("");
+    const list = FUNCS.filter(funcMatches);
+    $("#funcList").innerHTML = list.length ? list.map((fn) =>
+      '<article class="fn"><div class="fn-head"><span class="fn-name">' + esc(fn.f) + '</span><span class="fn-cat">' +
+      esc(XL.catName(FUNC_CATS, fn.c)) + "</span>" +
+      (fn.top ? '<span class="badge top">最常用</span>' : "") +
+      (fn.v ? '<span class="badge ver">' + VER[fn.v] + "</span>" : "") + "</div>" +
+      "<p>" + esc(fn.d) + "</p>" +
+      '<div class="syntax">' + syntax(fn) + "</div>" +
+      '<div class="example"><code>' + esc(fn.ex) + '</code><span class="res">→ <b>' + esc(fn.r) + "</b></span></div>" +
+      (fn.t ? '<p class="tip">' + esc(fn.t) + "</p>" : "") + "</article>").join("")
+      : '<div class="empty">找不到符合的函數，試試「加總」、「查詢」或函數名稱。</div>';
+  }
+  $("#funcCats").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-cat]");
+    if (b) { fs.cat = b.dataset.cat; renderFuncs(); }
+  });
+  $("#funcSearch").addEventListener("input", (e) => { fs.q = e.target.value.trim().toLowerCase(); renderFuncs(); });
+  $("#funcTopOnly").addEventListener("change", (e) => { fs.top = e.target.checked; renderFuncs(); });
+  XL.onShow.func = renderFuncs;
+
+  // ---------- 函數測驗 ----------
+  const COLS = ["A", "B", "C", "D", "E"];
+  const qz = { order: [], i: 0, score: 0, wrong: [], answered: false, opts: [] };
+
+  function parseRange(r) {
+    const m = r.replace(/\$/g, "").match(/^([A-Z])(\d+)(?::([A-Z])(\d+))?$/);
+    if (!m) return null;
+    const c1 = COLS.indexOf(m[1]), r1 = +m[2];
+    const c2 = m[3] ? COLS.indexOf(m[3]) : c1, r2 = m[4] ? +m[4] : r1;
+    return { c1: Math.min(c1, c2), c2: Math.max(c1, c2), r1: Math.min(r1, r2), r2: Math.max(r1, r2) };
+  }
+  function renderSheet(hl) {
+    const ranges = (hl || []).map(parseRange);
+    const cls = (r, c) => {
+      for (let k = ranges.length - 1; k >= 0; k--) {
+        const g = ranges[k];
+        if (g && r >= g.r1 && r <= g.r2 && c >= g.c1 && c <= g.c2) return " h" + (k + 1);
+      }
+      return "";
+    };
+    let html = "<thead><tr><th></th>" + COLS.map((c) => "<th>" + c + "</th>").join("") + "</tr></thead><tbody>";
+    QUIZ_SHEET.forEach((row, ri) => {
+      const r = ri + 1;
+      html += "<tr><th>" + r + "</th>" + row.map((v, ci) => {
+        const num = typeof v === "number";
+        return '<td class="' + (num ? "num" : "") + (r === 1 ? " hdr" : "") + cls(r, ci) + '">' + esc(v) + "</td>";
+      }).join("") + "</tr>";
+    });
+    $("#sheet").innerHTML = html + "</tbody>";
+  }
+  // 公式裡的範圍用和表格相同的顏色標示
+  function colorFormula(fx, hl) {
+    let html = esc(fx);
+    const items = (hl || []).map((r, k) => ({ r, k })).sort((a, b) => b.r.length - a.r.length);
+    const pat = items.map((x) => x.r.replace(/([A-Z])(\d+)/g, "\\$?$1\\$?$2")).join("|");
+    if (!pat) return html;
+    const re = new RegExp("(^|[^A-Z$])(" + pat + ")(?![0-9:])", "g");
+    return html.replace(re, (all, pre, ref) => {
+      const plain = ref.replace(/\$/g, "");
+      const hit = items.find((x) => x.r === plain);
+      return pre + (hit ? '<span class="r' + (hit.k + 1) + '">' + ref + "</span>" : ref);
+    });
+  }
+
+  function start(ids) {
+    const len = $("#quizLen").value;
+    const all = shuffle(QUIZ.map((_, i) => i));
+    qz.order = ids ? shuffle(ids) : len === "all" ? all : all.slice(0, +len);
+    qz.i = 0; qz.score = 0; qz.wrong = [];
+    $("#quizDone").hidden = true;
+    $("#quizCard").hidden = false;
+    $("#sheet").closest(".sheet-wrap").hidden = false;
+    show();
+  }
+  function prog() {
+    $("#quizProg").textContent = "第 " + Math.min(qz.i + 1, qz.order.length) + " / " + qz.order.length + " 題 · 答對 " + qz.score;
+  }
+  function show() {
+    const q = QUIZ[qz.order[qz.i]];
+    qz.answered = false;
+    renderSheet(q.hl);
+    $("#qText").textContent = q.q;
+    $("#qFormulaBox").hidden = !q.fx;
+    $("#qFormula").innerHTML = q.fx ? colorFormula(q.fx, q.hl) : "";
+    qz.opts = shuffle(q.o.map((t, i) => ({ t, ok: i === 0 })));
+    $("#qChoices").innerHTML = qz.opts.map((o, i) =>
+      '<button class="choice" type="button" data-i="' + i + '"><span class="letter">' + "ABCD"[i] + '</span><span class="body">' +
+      (q.code ? "<code>" + esc(o.t) + "</code>" : esc(o.t)) + "</span></button>").join("");
+    $("#qFeedback").className = "feedback";
+    $("#qFeedback").innerHTML = "";
+    $("#qNext").disabled = true;
+    $("#qNext").textContent = qz.i === qz.order.length - 1 ? "看結果" : "下一題";
+    prog();
+  }
+  function answer(i) {
+    if (qz.answered) return;
+    qz.answered = true;
+    const q = QUIZ[qz.order[qz.i]];
+    const btns = $("#qChoices").querySelectorAll(".choice");
+    btns.forEach((b, j) => { b.disabled = true; if (qz.opts[j].ok) b.classList.add("correct"); });
+    const ok = qz.opts[i].ok;
+    if (ok) qz.score++;
+    else { btns[i].classList.add("wrong"); qz.wrong.push(qz.order[qz.i]); }
+    const fb = $("#qFeedback");
+    fb.className = "feedback " + (ok ? "ok" : "bad");
+    fb.innerHTML = (ok ? "答對了！" : "答錯了，正確答案是 " + esc(q.o[0])) + '<span class="why">' + esc(q.why) + "</span>";
+    $("#qNext").disabled = false;
+    $("#qNext").focus({ preventScroll: true });
+    prog();
+  }
+  function done() {
+    const n = qz.order.length, s = qz.score;
+    $("#quizCard").hidden = true;
+    $("#sheet").closest(".sheet-wrap").hidden = true;
+    $("#quizDone").hidden = false;
+    $("#doneScore").textContent = s + " / " + n;
+    const best = XL.store.get("best", 0);
+    const pct = Math.round((s / n) * 100);
+    if (n >= 10 && pct > best) XL.store.set("best", pct);
+    const msg = pct === 100 ? "全對！這些函數你已經很熟了。" : pct >= 80 ? "很不錯，把答錯的再看一次就更穩了。" : pct >= 50 ? "有基礎了，建議到「函數速查」複習答錯的函數。" : "先到「函數速查」看看語法和範例，再回來挑戰。";
+    $("#doneText").textContent = msg + (n >= 10 ? "（最佳成績 " + Math.max(best, pct) + "%）" : "");
+    $("#doneWrong").disabled = !qz.wrong.length;
+    $("#quizProg").textContent = "測驗完成";
+  }
+  $("#qChoices").addEventListener("click", (e) => {
+    const b = e.target.closest(".choice");
+    if (b) answer(+b.dataset.i);
+  });
+  $("#qNext").addEventListener("click", () => {
+    if (!qz.answered) return;
+    qz.i++;
+    if (qz.i >= qz.order.length) done(); else show();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (XL.current !== "quiz" || qz.answered || $("#quizCard").hidden) return;
+    const t = e.target.tagName;
+    if (t === "INPUT" || t === "SELECT" || e.ctrlKey || e.altKey || e.metaKey) return;
+    const k = e.key.toUpperCase();
+    const idx = "1234".indexOf(k) >= 0 ? "1234".indexOf(k) : "ABCD".indexOf(k);
+    if (k.length === 1 && idx >= 0 && idx < qz.opts.length) { e.preventDefault(); answer(idx); }
+  });
+  $("#quizRestart").addEventListener("click", () => start());
+  $("#quizLen").addEventListener("change", () => start());
+  $("#doneRetry").addEventListener("click", () => start());
+  $("#doneWrong").addEventListener("click", () => start(qz.wrong.slice()));
+  XL.onShow.quiz = () => { if (!qz.order.length) start(); };
+
+  XL.boot();
+})();
+
+</script>
+
+<script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  navigator.serviceWorker.register("sw.js").catch(function () {});
+}
+</script>
+</html>
